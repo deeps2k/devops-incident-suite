@@ -8,15 +8,27 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Push to Hugging Face
-        uses: huggingface/hub-sync@v0.1.0
-        with:
-          github_repo_id: sumit-jain/devops-incident-suite
-          huggingface_repo_id: sumit-j/devops-incident-suite
-          hf_token: ${{ secrets.HF_TOKEN }}
-          repo_type: space
+      - name: Install Hugging Face Hub
+        run: pip install huggingface_hub
+
+      - name: Upload to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python -c "
+          from huggingface_hub import HfApi
+          api = HfApi(token='${{ secrets.HF_TOKEN }}')
+          api.upload_folder(
+              folder_path='.',
+              repo_id='sumit-j/devops-incident-suite',
+              repo_type='space',
+              ignore_patterns=['.git/*', '.github/*', '.venv/*', '__pycache__/*', '.env']
+          )
+          "
