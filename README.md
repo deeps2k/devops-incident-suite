@@ -1,3 +1,14 @@
+---
+title: DevOps Incident Suite
+emoji: 🚨
+colorFrom: red
+colorTo: blue
+sdk: gradio
+sdk_version: "5.29.0"
+app_file: app.py
+pinned: false
+---
+
 # Multi-Agent DevOps Incident Analysis Suite
 
 A VS Code-ready GenAI project that uses **LangChain + LangGraph** to analyze DevOps logs and generate remediation guidance, runbooks, Slack notifications, and JIRA tickets.
@@ -154,17 +165,3 @@ demo.launch(share=True)
    - `LLM_MODEL`
    - optional Slack/JIRA values
 5. Hugging Face will install `requirements.txt` and run `app.py`
-
-## Team Distribution for 7 People
-
-1. LangGraph Orchestrator Owner
-2. Log Parser Agent Owner
-3. Incident Classification Agent Owner
-4. Remediation/RAG Agent Owner
-5. Runbook Generator Agent Owner
-6. Slack/JIRA Integration Owner
-7. Gradio UI + Deployment Owner
-
-## Resume Line
-
-Built a LangGraph-powered multi-agent DevOps incident response platform that analyzes operational logs, classifies incidents, recommends remediation, generates runbooks, and automates Slack/JIRA escalation workflows.
