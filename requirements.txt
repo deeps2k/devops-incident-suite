@@ -1,8 +1,9 @@
-gradio==5.29.0
-python-dotenv==1.0.1
-requests==2.32.3
+# Gradio 5.x requires pydantic<2.12, which pins pydantic-core without cp314 wheels on Python 3.14.
+gradio>=6.14,<7
+python-dotenv>=1.0.1
+requests>=2.32.3
 
-pydantic>=2.11,<2.12
+pydantic>=2.12,<3
 
 langchain>=0.3.25
 langchain-core>=0.3.59
