@@ -59,4 +59,4 @@ with gr.Blocks(title="Multi-Agent DevOps Incident Analysis Suite") as demo:
     analyze_btn.click(analyze_logs, inputs=[log_text, log_file], outputs=[summary_output, runbook_output, debug_output])
 
 if __name__ == "__main__":
-    demo.launch(share=True)
+    demo.launch(show_error=True, ssr_mode=False)
