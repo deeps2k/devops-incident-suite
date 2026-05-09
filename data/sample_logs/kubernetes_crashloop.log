@@ -1,0 +1,4 @@
+2026-05-08T10:14:22Z ERROR service=payment-api pod=payment-api-7d9 container=app message="CrashLoopBackOff detected"
+2026-05-08T10:14:25Z ERROR service=payment-api message="Missing environment variable DATABASE_URL"
+2026-05-08T10:15:01Z WARN service=payment-api message="Readiness probe failed: connection refused"
+2026-05-08T10:15:30Z ERROR service=payment-api message="Container restarted 5 times in 10 minutes"
