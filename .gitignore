@@ -1,6 +1,11 @@
 .venv/
 .env
 __pycache__/
+.pytest_cache/
 *.pyc
 .gradio/
+.cache/
 
+data/chroma/
+data/jira_kb_processed.json
+.github/workflows/deploy-to-huggingface.yml

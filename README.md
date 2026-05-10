@@ -4,7 +4,7 @@ emoji: 🚨
 colorFrom: red
 colorTo: blue
 sdk: gradio
-sdk_version: "5.29.0"
+sdk_version: "6.14.0"
 python_version: "3.11"
 app_file: app.py
 pinned: false
@@ -24,30 +24,71 @@ A VS Code-ready GenAI project that uses **LangChain + LangGraph** to analyze Dev
 - Remediation recommendation
 - Runbook generation
 - Optional Slack and JIRA integration
+- Optional **RAG**: Chroma vector store + embeddings for past resolutions (from closed Jira sync script)
+- **Single LLM call** for classification and remediation (fewer round trips than separate classify + plan steps)
 - Gradio UI
 
 ## Agent Flow
 
-```text
-User uploads logs
-   ↓
-Log Parser Agent
-   ↓
-Incident Classification Agent
-   ↓
-Remediation Agent
-   ↓
-Runbook Generator Agent
-   ↓
-Slack/JIRA Notification Agent
+End-to-end processing from raw logs to outputs (Presidio runs in the Gradio app **before** LangGraph). The knowledge base is optional: populate it with `scripts/sync_closed_jira_to_kb.py` so **`classify_and_remediate`** can run similarity search before the model call.
+
+Flow summary:
+
+1. **parse_logs** — Structure events from raw text.
+2. **classify_and_remediate** — Keyword seed classification → **RAG** retrieve similar closed issues → **one** structured LLM response (incident fields + steps + remediation narrative using KB context).
+3. **generate_runbook** — Markdown runbook from steps, optional LLM narrative, **and embedded RAG excerpts** (issue keys, summaries, snippets) for Slack/Jira and the UI.
+4. **notify_and_ticket** — Slack webhook; Jira ticket for P1/P2 with the full runbook body.
+
+Legacy helpers `classifier_agent.classify_incident` and `remediation_agent.recommend_remediation` remain in the repo for reuse but are **not** wired into the default graph.
+
+```mermaid
+flowchart TB
+    subgraph input["Input"]
+        U["Paste or upload .log / .txt"]
+    end
+
+    subgraph gate["Privacy"]
+        P["Presidio anonymization<br/>PII / network identifiers"]
+    end
+
+    subgraph kb["Knowledge base (optional)"]
+        SYNC["scripts/sync_closed_jira_to_kb.py<br/>closed Jira issues → summaries"]
+        V["Chroma persistent store<br/>data/chroma"]
+        SYNC --> V
+    end
+
+    subgraph graph["LangGraph pipeline"]
+        A["parse_logs"]
+        B["classify_and_remediate<br/>RAG retrieve + single LLM JSON"]
+        D["generate_runbook<br/>steps + KB section + narrative"]
+        N["notify_and_ticket<br/>Slack webhook · Jira API"]
+    end
+
+    subgraph output["UI outputs"]
+        S["Incident summary"]
+        R["Runbook"]
+        I["Slack & Jira status"]
+        J["Full agent state JSON"]
+    end
+
+    V -.->|"similarity search<br/>optional"| B
+
+    U --> P
+    P --> A --> B --> D --> N
+    N --> S
+    N --> R
+    N --> I
+    N --> J
 ```
 
 ## Project Structure
 
 ```text
-devops_incident_vscode/
+devops-incident-suite/
 ├── agents/
 │   ├── log_agent.py
+│   ├── heuristics.py
+│   ├── classify_remediate_agent.py
 │   ├── classifier_agent.py
 │   ├── remediation_agent.py
 │   ├── runbook_agent.py
@@ -57,8 +98,16 @@ devops_incident_vscode/
 ├── integrations/
 │   ├── slack.py
 │   └── jira.py
+├── knowledge/
+│   ├── vector_store.py
+│   └── jira_kb_sync.py
+├── scripts/
+│   └── sync_closed_jira_to_kb.py
 ├── utils/
-│   └── llm.py
+│   ├── llm.py
+│   ├── embeddings.py
+│   └── log_anonymization.py
+├── tests/
 ├── data/sample_logs/
 ├── app.py
 ├── state.py
@@ -71,7 +120,7 @@ devops_incident_vscode/
 
 ### 1. Open folder in VS Code
 
-Open the `devops_incident_vscode` folder.
+Open this repository folder (e.g. `devops-incident-suite`).
 
 ### 2. Create virtual environment
 
